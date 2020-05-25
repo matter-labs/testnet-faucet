@@ -20,8 +20,8 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 export default {
   name: 'App',
   data: () => ({
-    address: "0xde03a0B5963f75f1C8485B355fF6D30f3093BDE7",
-    tweetUrl: "https://twitter.com/EquatorialStar/status/1262990988869545984",
+    address: "",
+    tweetUrl: "",
     ready: false,
   }),
   methods: {

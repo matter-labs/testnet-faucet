@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rinkeby-faucet
+  namespace: faucet
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rinkeby-faucet
+  template:
+    metadata:
+      labels:
+        app: rinkeby-faucet
+    spec:
+      containers:
+        - name: faucet
+          image: matterlabs/faucet
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 2880
+          env:
+            - name: WEB3_URL
+              value: "${WEB3_URL}"
+            - name: WS_API_ADDR
+              value: "${WS_API_ADDR}"
+            - name: MNEMONIC
+              value: "${MNEMONIC}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rinkeby-faucet
+  namespace: faucet
+  labels:
+    app: rinkeby-faucet
+spec:
+  type: ClusterIP
+  ports:
+  - port: 2880
+    targetPort: 2880
+    protocol: TCP
+    name: rinkeby-faucet-port
+  selector:
+    app: rinkeby-faucet
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: faucet-ingress
+  namespace: faucet
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+spec:
+  tls:
+    - hosts:
+      - rinkeby-faucet.mattr.network
+      secretName: rinkeby-faucet.mattr.network
+  rules:
+  - host: rinkeby-faucet.mattr.network
+    http:
+      paths:
+        - path: /
+          backend:
+            serviceName: rinkeby-faucet
+            servicePort: 2880

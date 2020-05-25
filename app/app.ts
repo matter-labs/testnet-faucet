@@ -143,23 +143,23 @@ async function startSendingMoney(): Promise<void> {
         
         const address = store[ticket];
 
-        const transferEth = await syncWallet.syncTransfer({
-            to: address,
-            token: 'ETH',
-            amount: parseEther("0.002"),
-            fee: parseEther('0.0'),
-        });
+        const deposits = [
+            { 
+                token: 'ETH', 
+                amount: parseEther('0.002'),
+            },
+        ];
 
-        await transferEth.awaitReceipt();
-
-        const transferERC20 = await syncWallet.syncTransfer({
-            to: address,
-            token: 'ERC20-1',
-            amount: parseEther("0.002"),
-            fee: parseEther('0.0'),
-        });
-
-        await transferERC20.awaitReceipt();
+        for (const { token, amount } of deposits) {
+            const transfer = await syncWallet.syncTransfer({
+                to: address,
+                token,
+                amount,
+                fee: parseEther('0.0'),
+            });
+    
+            await transfer.awaitReceipt();
+        }
 
         store[ticket] = "already sent";
         queue.shift();
