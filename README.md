@@ -26,6 +26,9 @@ There's [real-time subscription endpoint](https://developer.twitter.com/en/docs/
 
 https://github.com/draftbit/twitter-lite#streams
 
+## Replying
+
+Send reply like "thanks, we got you, here's your tx: "
 
 # Usage
 

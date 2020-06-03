@@ -8,6 +8,7 @@
     "crypto": "^1.0.1",
     "dom-parser": "^0.1.6",
     "express": "^4.17.1",
+    "twitter-lite": "^0.13.0",
     "zksync": "^0.5.5"
   },
   "devDependencies": {

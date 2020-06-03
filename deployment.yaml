@@ -28,6 +28,14 @@ spec:
               value: "${WS_API_ADDR}"
             - name: MNEMONIC
               value: "${MNEMONIC}"
+            - name: CONSUMER_KEY
+              value: "${CONSUMER_KEY}"
+            - name: CONSUMER_SECRET
+              value: "${CONSUMER_SECRET}"
+            - name: ACCESS_TOKEN_KEY
+              value: "${ACCESS_TOKEN_KEY}"
+            - name: ACCESS_TOKEN_SECRET
+              value: "${ACCESS_TOKEN_SECRET}"
 ---
 apiVersion: v1
 kind: Service
@@ -57,10 +65,10 @@ metadata:
 spec:
   tls:
     - hosts:
-      - rinkeby-faucet.mattr.network
-      secretName: rinkeby-faucet.mattr.network
+      - rinkeby-faucet.zksync.dev
+      secretName: zksync-dev
   rules:
-  - host: rinkeby-faucet.mattr.network
+  - host: rinkeby-faucet.zksync.dev
     http:
       paths:
         - path: /
