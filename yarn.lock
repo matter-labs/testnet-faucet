@@ -624,7 +624,7 @@ next-tick@~1.0.0:
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
   integrity sha1-yobR/ogoFpsBICCOPchCS524NCw=
 
-node-fetch@2.6.0:
+node-fetch@2.6.0, node-fetch@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
   integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
@@ -697,6 +697,11 @@ qs@6.7.0:
   version "6.7.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.7.0.tgz#41dc1a015e3d581f1621776be31afb2876a9b1bc"
   integrity sha512-VCdBRNFTX1fyE7Nb6FYoURo/SPe62QCaAyzJvUjwRaIsc+NePBEniHlvxFmmX56+HZphIGtV0XeCirBtpDrTyQ==
+
+querystring@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/querystring/-/querystring-0.2.0.tgz#b209849203bb25df820da756e747005878521620"
+  integrity sha1-sgmEkgO7Jd+CDadW50cAWHhSFiA=
 
 range-parser@~1.2.1:
   version "1.2.1"
@@ -939,10 +944,10 @@ zksync-crypto@^0.2.1:
   resolved "https://registry.yarnpkg.com/zksync-crypto/-/zksync-crypto-0.2.1.tgz#052bc58504a5233ee076a44946c494d283908ba8"
   integrity sha512-U29Oa78w4+Qu+KwJAYwukmn9A7WZP6F+/QICFf+QSByhaIJJ12Oo5fnzTVrxEv6aptcZ3/KBWkbZIM4ZiR6avQ==
 
-zksync@^0.5.5:
-  version "0.5.5"
-  resolved "https://registry.yarnpkg.com/zksync/-/zksync-0.5.5.tgz#fadc80a61ed21335123d63092d6ccb38924e19d2"
-  integrity sha512-E7S3/09fpGmZRX63QKO0Rj1ovf5UAXrsVi4hR7fEtotm2+c46BeEMLzp+jaAfGOeWSeeE/5xU+NehKA1SHuu3w==
+zksync@^0.5.11:
+  version "0.5.11"
+  resolved "https://registry.yarnpkg.com/zksync/-/zksync-0.5.11.tgz#ad68926598e9860190175e4ad2a87168fb8a981b"
+  integrity sha512-3FWLwdWZWZ1DMnMo87h63hTvv1dRO61TbHkyXRinXTYHq6/feRq9YKKaL9pNeBC3XNfgHP9hHIMwmb0fuuiLlg==
   dependencies:
     axios "^0.19.0"
     blake2b "^2.1.3"

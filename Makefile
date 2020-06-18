@@ -10,4 +10,10 @@ push-image: image
 
 deploy:
 	envsubst < deployment.yaml | kubectl apply -f -
-	kubectl patch deployment rinkeby-faucet -n faucet -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"$(shell date +%s)\"}}}}}"
+	kubectl patch deployment "${DEPLOYMENT_NAME}" -n faucet -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"$(shell date +%s)\"}}}}}"
+
+start:
+	kubectl -n faucet scale deployments/${DEPLOYMENT_NAME} --replicas=1
+
+stop:
+	kubectl -n faucet scale deployments/${DEPLOYMENT_NAME} --replicas=0
