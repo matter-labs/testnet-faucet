@@ -9,7 +9,6 @@ import { parseEther } from 'ethers/utils';
 import { sleep } from 'zksync/build/utils';
 import * as fs from 'fs';
 import Twitter, { Stream } from 'twitter-lite';
-import * as qs from 'querystring';
 
 const port = 2880;
 
@@ -35,16 +34,13 @@ function getTicketFromTweetText(text: string): string {
     return res[0];
 }
 
-function notifyTelegram(text: string) {
+function notifyTelegram(text) {
     axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
         "chat_id": process.env.TELEGRAM_CHAT_ID,
         text: `${process.env.DEPLOYMENT_NAME}: ${text}`,
+    }).catch(error => {
+        console.error("Failed to notify telegram.");
     });
-}
-
-// TODO: change when tweet text will be finalized.
-function getTwitterReplyTextFromHashes(hashes: string[], name?: string): string {
-    return `${name}, we got you.`;
 }
 
 const client = new Twitter({
@@ -58,6 +54,7 @@ const client = new Twitter({
 
 function allowWithdrawal(ticket: string) {
     const { address, id_str } = store[ticket] || {};
+
     if (address == null) return;
     if (id_str == null) return;
 
@@ -66,7 +63,7 @@ function allowWithdrawal(ticket: string) {
     allowWithdrawalSet[address] = true;
 }
 
-async function processTweetObject(tweet) {
+function processTweetObject(tweet) {
     const ticket = getTicketFromTweetText(tweet.text);
 
     if (!ticket) return;
@@ -182,7 +179,7 @@ app.get('/validate_tweet/:url', async (req, res) => {
         const tweet = await client.get("statuses/show", { id });
 
         // add address to queue if needed
-        await processTweetObject(tweet);
+        processTweetObject(tweet);
     
         res.send("Success");
     } catch (e) {
@@ -251,47 +248,69 @@ async function startSendingMoneyFragile(): Promise<void> {
         // usedAddresses[address] = true;
         sendMoneyQueue.shift();
         console.log(`Transfered funds to ${address}`);
-
-        // await client.post("statuses/update", {
-        //     status: getTwitterReplyTextFromHashes(hashes, name),
-        //     in_reply_to_status_id: id_str,
-        //     auto_populate_reply_metadata: true
-        // });
     }
 }
 
 async function startSendingMoney() {
-    let delay = 1;
+    let delay = 1000;
     let startTime;
     while (true) {
         try {
-            await sleep(delay);
             startTime = Date.now();
             await startSendingMoneyFragile();
         } catch (e) {
             const runningTime = Date.now() - startTime;
 
             if (runningTime < 60000) {
-                delay *= 2;
+                delay = Math.min(delay * 2, 600000);
             } else {
-                delay = 1;
+                delay = 1000;
             }
 
             console.error(`Error in startSending money:`, e);
             notifyTelegram(`Error in startSending money: ${e.toString()}`);
+
+            await sleep(delay);
         }
     }
 }
 
-// Start listening twitter stream
-function startListeningTwitterStream() {
-    return client
-        .stream("statuses/filter", { track: "#zksync_claim" })
-        .on("data", processTweetObject)
-        .on("error", error => {
-            notifyTelegram(`Error in twitter stream: ${JSON.stringify(error, null, 2)}`);
+// never awaits, only rejects
+function startListeningTwitterStreamFragile() {
+    return new Promise((_, reject) => {
+        notifyTelegram('creating stream...');
+        const stream = client
+            .stream("statuses/filter", { track: "#zksync_claim" })
+            .on("data", processTweetObject)
+            .on("error", error => {
+                process.nextTick(() => stream.destroy());
+                reject(error);
+            });
+    })
+}
+
+async function startListeningTwitterStream() {
+    let delay = 60000;
+    let startTime;
+    while (true) {
+        try {
+            startTime = Date.now();
+            await startListeningTwitterStreamFragile();
+        } catch (error) {
+            const runningTime = Date.now() - startTime;
+
+            if (runningTime < 60000) {
+                delay = Math.min(delay * 2, 3600000);
+            } else {
+                delay = 60000;
+            }
+
+            notifyTelegram(`Error in twitter stream: ${error.status} ${error.statusText} ${JSON.stringify(error, null, 2)}`);
             console.error('Error in twitter stream:', error);
-        });
+            console.log('waiting ${delay}');
+            await sleep(delay);
+        }
+    }
 }
 
 function getSymbolProperty(object, name) {
@@ -300,39 +319,18 @@ function getSymbolProperty(object, name) {
     return object[symbols[0]];
 }
 
-// function startListeningTwitterStream(backoffAmount = 10): Promise<Stream> {
-//     return new Promise(async (resolve, reject) => {
-//         const stream = client
-//             .stream("statuses/filter", { track: "#zksync_claim" })
-//             .on("data", processTweetObject)
-//             .on("error", async error => {
-//                 const responseInternals = getSymbolProperty(error, 'Symbol(Response internals)');
-//                 if (responseInternals && responseInternals.statusText === "Enhance Your Calm") {
-//                     console.log("Enhancing our calm");
-//                     await sleep(backoffAmount);
-//                     resolve(await startListeningTwitterStream(backoffAmount * 2));
-//                 } else {
-//                     console.error("Error in twitter stream:", error);
-//                     reject(error);
-//                 }
-//             });
-//         await sleep(10);
-//         resolve(stream);
-//     });
-// }
-
-notifyTelegram("Starting");
-
 // Start API
 app.listen(port, () => console.log(`App listening at http://localhost:${port}`));
 
 startSendingMoney();
 startListeningTwitterStream();
-
+notifyTelegram("Starting");
 
 process.stdin.resume(); //so the program will not close instantly
 
 function exitHandler(options, exitCode) {
+    notifyTelegram(`######## Shutting down, exitcode: ${exitCode}`);
+
     if (options.cleanup) {
         const state = {
             store,
