@@ -60,12 +60,17 @@ app.get('/register_address/:address/:salt', async (req, res) => {
 
 
 async function startSendingMoneyFragile(): Promise<void> {
-    const ethProvider = new ethers.providers.JsonRpcProvider(process.env.WEB3_URL);
-    // const syncProvider = await zksync.Provider.newWebsocketProvider(process.env.WS_API_ADDR);
     const syncProvider = await zksync.Provider.newHttpProvider(process.env.HTTP_RPC_API_ADDR);
 
-    const ethWallet = new ethers.Wallet(process.env.ETH_PRIVATE_KEY).connect(ethProvider);
+    const ethWallet = new ethers.Wallet(process.env.ETH_PRIVATE_KEY);
     const syncWallet = await zksync.Wallet.fromEthSigner(ethWallet, syncProvider);
+
+    if (! await syncWallet.isSigningKeySet()) {
+        const setSigningKey = await syncWallet.setSigningKey({ feeToken: "MLTT" });
+        await setSigningKey.awaitReceipt();
+        console.log("Signing key is set");
+    }
+
 
     const amounts = [
         {
@@ -80,12 +85,15 @@ async function startSendingMoneyFragile(): Promise<void> {
             token: "USDT",
             amount: syncProvider.tokenSet.parseToken("USDT", "100"),
         },
+        {
+            token: "MLTT",
+            amount: syncProvider.tokenSet.parseToken("MLTT", "100"),
+        },
     ];
 
     console.log(`Starting sending money from ${syncWallet.address()}`);
     for (const { token } of amounts) {
         console.log(`Sync balance for ${token}: ${await syncWallet.getBalance(token)}`);
-        console.log(`Eth balance for ${token}: ${await syncWallet.getEthereumBalance(token)}`);
     }
 
     while (true) {
