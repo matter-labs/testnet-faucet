@@ -78,12 +78,8 @@ async function startSendingMoneyFragile(): Promise<void> {
             amount: syncProvider.tokenSet.parseToken("DAI", "100"),
         },
         {
-            token: "USDC",
-            amount: syncProvider.tokenSet.parseToken("USDC", "100"),
-        },
-        {
-            token: "USDT",
-            amount: syncProvider.tokenSet.parseToken("USDT", "100"),
+            token: "BAT",
+            amount: syncProvider.tokenSet.parseToken("BAT", "100"),
         },
         {
             token: "MLTT",
