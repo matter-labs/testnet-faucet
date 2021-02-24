@@ -86,6 +86,17 @@ async function startSendingMoneyFragile(): Promise<void> {
             amount: syncProvider.tokenSet.parseToken("MLTT", "100"),
         },
     ];
+    if (process.env.ETH_NETWORK=="rinkeby") {
+        amounts.push({
+            token: "USDC",
+            amount: syncProvider.tokenSet.parseToken("USDC", "100"),
+        })
+        amounts.push({
+            token: "USDT",
+            amount: syncProvider.tokenSet.parseToken("USDT", "100"),
+        });
+    }
+
 
     console.log(`Starting sending money from ${syncWallet.address()}`);
     for (const { token } of amounts) {
